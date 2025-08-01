@@ -38,14 +38,15 @@ public class ProjectController {
             List<ProjectDto> projects = projectService.getAllProjects();
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", stats);
-            response.put("message", "프로젝트 통계를 조회했습니다.");
+            response.put("data", projects);
+            response.put("message", "프로젝트 목록을 성공적으로 조회했습니다.");
+            response.put("count", projects.size());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "프로젝트 통계 조회 중 오류가 발생했습니다: " + e.getMessage());
+            errorResponse.put("message", "프로젝트 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -375,4 +376,16 @@ public class ProjectController {
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data
+            response.put("data", stats);
+            response.put("message", "프로젝트 통계를 조회했습니다.");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "프로젝트 통계 조회 중 오류가 발생했습니다: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+}

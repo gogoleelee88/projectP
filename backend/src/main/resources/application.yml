@@ -1,0 +1,197 @@
+# Spring Boot Application Configuration
+# 프로젝트 관리 시스템 설정
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  # 애플리케이션 정보
+  application:
+    name: flow-project-management-system
+
+  # 데이터베이스 설정 (H2 - 개발용)
+  datasource:
+    url: jdbc:h2:mem:flowdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+
+  # H2 콘솔 설정 (개발용)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  # JPA/Hibernate 설정
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop  # 개발용: create-drop, 운영용: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    defer-datasource-initialization: true
+
+  # SQL 초기화
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+  # JSON 설정
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Seoul
+
+  # 정적 리소스 설정
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        cachecontrol:
+          max-age: 3600
+
+  # 개발 도구 설정
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+# 로깅 설정
+logging:
+  level:
+    com.flow.pms: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+    console: '%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n'
+  file:
+    name: logs/pms-application.log
+
+# 관리 설정 (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 애플리케이션 커스텀 설정
+app:
+  name: "Flow Project Management System"
+  version: "1.0.0"
+  description: "협업툴을 위한 프로젝트 관리 시스템"
+  contact:
+    developer: "LEES00"
+    email: "lees00@example.com"
+  
+  # 보안 설정
+  security:
+    jwt:
+      secret: "flow-pms-secret-key-2025"
+      expiration: 86400000  # 24시간 (밀리초)
+    
+  # 파일 업로드 설정
+  upload:
+    max-file-size: 10MB
+    max-request-size: 10MB
+    upload-dir: uploads/
+
+  # 외부 API 설정
+  external:
+    blog:
+      base-url: "https://velog.io/@lco2009d"
+    
+  # 기본 데이터 설정
+  defaults:
+    admin:
+      username: "LEES00"
+      email: "lees00@example.com"
+      display-name: "LEES00"
+    projects:
+      categories: ["피드", "업무", "간트차트", "캘린더", "파일"]
+      statuses: ["예정", "진행중", "완료", "보류", "취소"]
+
+---
+# 개발 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:h2:mem:flowdb-dev
+  
+logging:
+  level:
+    root: INFO
+    com.flow.pms: DEBUG
+
+---
+# 테스트 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: test
+      
+  datasource:
+    url: jdbc:h2:mem:testdb
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.flow.pms: INFO
+
+---
+# 운영 환경 설정 (MySQL 사용 예시)
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+  datasource:
+    url: jdbc:mysql://localhost:3306/flowdb?useSSL=false&serverTimezone=Asia/Seoul
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:flow_user}
+    password: ${DB_PASSWORD:flow_password}
+    
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.flow.pms: INFO
+    org.hibernate.SQL: WARN
+  file:
+    name: /var/log/pms/application.log
