@@ -162,3 +162,194 @@ const CalendarWidget = () => {
       {/* Calendar Header */}
       <div className="text-xl font-bold text-gray-800 text-center mb-6">
         {formatDate(selectedDate)}
+      </div>
+      
+      {/* Navigation */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <button 
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          onClick={() => navigateMonth(-1)}
+          title="이전 달"
+        >
+          <ChevronLeft size={20} className="text-gray-600" />
+        </button>
+        
+        <button className="px-4 py-2 text-sm text-gray-500 border border-gray-300 rounded-full hover:border-green-400 hover:text-green-600 transition-all">
+          오늘
+        </button>
+        
+        <button 
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          onClick={() => navigateMonth(1)}
+          title="다음 달"
+        >
+          <ChevronRight size={20} className="text-gray-600" />
+        </button>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="mb-6">
+        {/* Week Days Header */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={index} className="h-8 flex items-center justify-center text-sm font-medium text-gray-500">
+              {day}
+            </div>
+          ))}
+        </div>
+        
+        {/* Calendar Days */}
+        <div className="grid grid-cols-7 gap-1">
+          {renderCalendar()}
+        </div>
+      </div>
+
+      {/* Selected Day Events */}
+      <div className="border-t pt-6">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-medium text-gray-800">
+            {selectedDay}일의 일정 
+            {getSelectedDayEvents().length > 0 && (
+              <span className="text-green-600">({getSelectedDayEvents().length})</span>
+            )}
+          </h4>
+          <button 
+            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            title="일정 추가"
+          >
+            <Plus size={16} className="text-gray-500" />
+          </button>
+        </div>
+        
+        <div className="space-y-3 max-h-32 overflow-y-auto">
+          {getSelectedDayEvents().length > 0 ? (
+            getSelectedDayEvents().map(event => (
+              <EventItem key={event.id} event={event} />
+            ))
+          ) : (
+            <div className="text-center py-4">
+              <div className="text-gray-400 text-sm">일정이 없습니다</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="mt-6 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-lg font-bold text-green-600">{events.length}</div>
+            <div className="text-xs text-gray-500">이번 달 일정</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-blue-600">
+              {events.filter(e => e.type === 'meeting').length}
+            </div>
+            <div className="text-xs text-gray-500">회의</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-purple-600">
+              {events.filter(e => e.type === 'task').length}
+            </div>
+            <div className="text-xs text-gray-500">업무</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Calendar Day Component
+const CalendarDay = ({ day, isCurrentMonth, isToday, isSelected, events, onClick }) => {
+  return (
+    <div 
+      className={`
+        h-10 flex flex-col items-center justify-center text-sm cursor-pointer rounded-lg transition-all relative
+        ${isCurrentMonth 
+          ? isSelected 
+            ? 'bg-green-500 text-white font-semibold shadow-md' 
+            : isToday 
+              ? 'bg-blue-100 text-blue-600 font-semibold' 
+              : 'text-gray-800 hover:bg-gray-100'
+          : 'text-gray-400 hover:bg-gray-50'
+        }
+      `}
+      onClick={onClick}
+    >
+      <span className="leading-none">{day}</span>
+      
+      {/* Event Indicators */}
+      {events.length > 0 && (
+        <div className="absolute bottom-1 flex gap-0.5">
+          {events.slice(0, 3).map((event, index) => (
+            <div 
+              key={index}
+              className={`w-1 h-1 rounded-full ${
+                event.color === 'purple' ? 'bg-purple-400' :
+                event.color === 'blue' ? 'bg-blue-400' :
+                event.color === 'green' ? 'bg-green-400' :
+                event.color === 'orange' ? 'bg-orange-400' :
+                'bg-gray-400'
+              } ${isSelected ? 'bg-white' : ''}`}
+            />
+          ))}
+          {events.length > 3 && (
+            <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-gray-300'}`} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Event Item Component
+const EventItem = ({ event }) => {
+  const getEventIcon = (type) => {
+    switch (type) {
+      case 'meeting':
+        return '👥';
+      case 'task':
+        return '📋';
+      case 'review':
+        return '🔍';
+      case 'demo':
+        return '🎯';
+      default:
+        return '📅';
+    }
+  };
+
+  const getEventColor = (color) => {
+    switch (color) {
+      case 'purple':
+        return 'bg-purple-100 border-purple-200 text-purple-800';
+      case 'blue':
+        return 'bg-blue-100 border-blue-200 text-blue-800';
+      case 'green':
+        return 'bg-green-100 border-green-200 text-green-800';
+      case 'orange':
+        return 'bg-orange-100 border-orange-200 text-orange-800';
+      default:
+        return 'bg-gray-100 border-gray-200 text-gray-800';
+    }
+  };
+
+  return (
+    <div className={`flex items-center gap-3 p-3 rounded-lg border ${getEventColor(event.color)} hover:shadow-sm transition-all cursor-pointer`}>
+      <div className="text-lg">{getEventIcon(event.type)}</div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm truncate">{event.title}</div>
+        <div className="text-xs opacity-75">{event.time}</div>
+      </div>
+      <div className={`w-3 h-3 rounded-full ${
+        event.color === 'purple' ? 'bg-purple-400' :
+        event.color === 'blue' ? 'bg-blue-400' :
+        event.color === 'green' ? 'bg-green-400' :
+        event.color === 'orange' ? 'bg-orange-400' :
+        'bg-gray-400'
+      }`}></div>
+    </div>
+  );
+};
+
+export default CalendarWidget;
